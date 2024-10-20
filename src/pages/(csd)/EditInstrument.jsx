@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import Sidebar from "../../components/Sidebar";
-import { useNavigate, Link } from "react-router-dom"; // Import useNavigate
-//import FontAwesomeIcon
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
+import Sidebar from "../../components/Sidebar";
 
-const AddInstrumentPage = () => {
-    const navigate = useNavigate(); // Initialize navigate hook
+const EditInstrument = () => {
+    const { instrument_id } = useParams();
     const [sdgs, setSdgs] = useState([
         { sdg_id: "SDG01", no: 1, title: "No Poverty" },
         { sdg_id: "SDG02", no: 2, title: "Zero Hunger" },
@@ -43,27 +42,8 @@ const AddInstrumentPage = () => {
         { sdg_id: "SDG17", no: 17, title: "Partnerships for the Goals" },
     ]);
 
-    // useEffect(() => {
-    //     const runValidation = async () => {
-    //         try {
-    //             const isVerified = await validateToken();
-    //             if (
-    //                 !isVerified ||
-    //                 localStorage.getItem("role").toString() !== "0"
-    //             ) {
-    //                 window.location.href = "/login";
-    //             }
-    //         } catch (error) {
-    //             console.error("Error during token validation:", error);
-    //             return {
-    //                 error: "An error occurred during token validation.",
-    //             };
-    //         }
-    //     };
-    //     runValidation();
-    // }, []);
-
     const [instrumentData, setInstrumentData] = useState({
+        instrument_id: instrument_id,
         sdg_id: "",
         subtitle: "",
         sections: [
@@ -83,46 +63,107 @@ const AddInstrumentPage = () => {
         ],
     });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
+    useEffect(() => {
+        const fetchInstrumentAndSections = async () => {
+            try {
+                // Fetch instrument data
+                const iResponse = await fetch(
+                    `http://localhost:9000/api/get/instrument-by-instrument-id/${instrument_id}`
+                );
+                const iData = await iResponse.json();
 
-    const handleSectionContentChange = (e, sectionIndex) => {
-        const { name, value } = e.target;
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex][name] = value;
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
+                // Fetch sections data
+                const sectionsResponse = await fetch(
+                    `http://localhost:9000/api/get/section-by-instrument-id/${instrument_id}`
+                );
+                const sectionsData = await sectionsResponse.json();
 
-    const handleQuestionChange = (e, sectionIndex, questionIndex) => {
-        const { name, value } = e.target;
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].questions[questionIndex][name] = value;
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
+                // Fetch questions for each section
+                // const sectionsWithQuestions = await Promise.all(
+                //     sectionsData.map(async (section) => {
+                //         const questionsResponse = await fetch(
+                //             `http://localhost:9000/api/get/questions/${section.section_id}`
+                //         );
+                //         const questionsData = await questionsResponse.json();
 
-    const handleQuestionTypeChange = (e, sectionIndex, questionIndex) => {
-        const { value } = e.target;
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].questions[questionIndex].questionType =
-            value;
-        updatedSections[sectionIndex].questions[questionIndex].suffix = ""; // Reset suffix if changing type
-        updatedSections[sectionIndex].questions[questionIndex].options = []; // Reset options if changing type
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
+                //         // Map questions to the expected structure
+                //         const questions = questionsData.map(
+                //             async (question) => ({
+                //                 question_id: question.question_id,
+                //                 questionId: question.sub_id,
+                //                 questionText: question.question,
+                //                 questionType: question.type,
+                //                 suffix: question.suffix || "",
+                //                 options: await fetch(
+                //                     `http://localhost:9000/api/get/options/${question.question_id}`
+                //                 ).then((response) => response.json()),
+                //             })
+                //         );
+
+                //         // Return section data with questions
+                //         return {
+                //             section_id: section.section_id,
+                //             content: section.section_content || "",
+                //             questions: questions,
+                //             formulas: [""],
+                //         };
+                //     })
+                // );
+
+                const sectionsWithQuestions = await Promise.all(
+                    sectionsData.map(async (section) => {
+                        const questionsResponse = await fetch(
+                            `http://localhost:9000/api/get/questions/${section.section_id}`
+                        );
+                        const questionsData = await questionsResponse.json();
+
+                        // Map questions to the expected structure and await all promises
+                        const questions = await Promise.all(
+                            questionsData.map(async (question) => {
+                                const optionsResponse = await fetch(
+                                    `http://localhost:9000/api/get/options/${question.question_id}`
+                                );
+                                const optionsData =
+                                    await optionsResponse.json();
+                                console.log(
+                                    `Question ${question.question_id} options: `,
+                                    optionsData
+                                );
+                                return {
+                                    question_id: question.question_id,
+                                    questionId: question.sub_id,
+                                    questionText: question.question,
+                                    questionType: question.type,
+                                    suffix: question.suffix || "",
+                                    options: optionsData, // Set options directly after fetching
+                                };
+                            })
+                        );
+
+                        // Return section data with resolved questions
+                        return {
+                            section_id: section.section_id,
+                            content: section.section_content || "",
+                            questions: questions,
+                            formulas: [""],
+                        };
+                    })
+                );
+
+                // Update instrument data state
+                setInstrumentData({
+                    instrument_id: instrument_id,
+                    sdg_id: iData[0].sdg_id || "",
+                    subtitle: iData[0].sdg_subtitle || "",
+                    sections: sectionsWithQuestions,
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchInstrumentAndSections();
+    }, [instrument_id]);
 
     const generateQuestionId = (sectionIndex, questionIndex) => {
         // Determine the letter prefix based on the section index
@@ -134,81 +175,25 @@ const AddInstrumentPage = () => {
         return `${sectionPrefix}${sectionIndex + 1}`;
     };
 
-    const addSection = () => {
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: [
-                ...prevData.sections,
-                {
-                    content: "",
-                    questions: [
-                        {
-                            questionId: generateQuestionId(
-                                prevData.sections.length,
-                                0
-                            ),
-                            questionText: "",
-                            questionType: "Number",
-                            suffix: "",
-                            options: [],
-                        },
-                    ],
-                    formulas: [""],
-                },
-            ],
-        }));
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setInstrumentData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-    const removeSection = (index) => {
-        const updatedSections = instrumentData.sections.filter(
-            (_, i) => i !== index
-        );
+    const handleSectionContentChange = (e, sectionIndex) => {
+        const { value } = e.target;
+        const updatedSections = [...instrumentData.sections];
+        updatedSections[sectionIndex].content = value;
         setInstrumentData((prevData) => ({
             ...prevData,
             sections: updatedSections,
         }));
     };
 
-    const addQuestion = (sectionIndex) => {
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: prevData.sections.map((section, idx) =>
-                idx === sectionIndex
-                    ? {
-                          ...section,
-                          questions: [
-                              ...section.questions,
-                              {
-                                  questionId: generateQuestionId(
-                                      sectionIndex,
-                                      section.questions.length
-                                  ),
-                                  questionText: "",
-                                  questionType: "Number",
-                                  suffix: "",
-                                  options: [],
-                              },
-                          ],
-                      }
-                    : section
-            ),
-        }));
-    };
-
-    const removeQuestion = (sectionIndex, questionIndex) => {
+    const handleQuestionChange = (e, sectionIndex, questionIndex) => {
+        const { name, value } = e.target;
         const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].questions = updatedSections[
-            sectionIndex
-        ].questions.filter((_, i) => i !== questionIndex);
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
-
-    const addOption = (sectionIndex, questionIndex) => {
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].questions[questionIndex].options.push("");
+        updatedSections[sectionIndex].questions[questionIndex][name] = value;
         setInstrumentData((prevData) => ({
             ...prevData,
             sections: updatedSections,
@@ -232,181 +217,154 @@ const AddInstrumentPage = () => {
         }));
     };
 
+    const handleQuestionTypeChange = (e, sectionIndex, questionIndex) => {
+        const { value } = e.target;
+        const updatedSections = [...instrumentData.sections];
+        updatedSections[sectionIndex].questions[questionIndex].questionType =
+            value;
+        if (value === "Multiple Options") {
+            updatedSections[sectionIndex].questions[questionIndex].options = [
+                "",
+            ];
+        }
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: updatedSections,
+        }));
+    };
+
+    const addSection = () => {
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: [
+                ...prevData.sections,
+                { content: "", questions: [], formulas: [] },
+            ],
+        }));
+    };
+
+    const removeSection = (sectionIndex) => {
+        const updatedSections = instrumentData.sections.filter(
+            (_, index) => index !== sectionIndex
+        );
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: updatedSections,
+        }));
+    };
+
+    const addQuestion = (sectionIndex) => {
+        const updatedSections = [...instrumentData.sections];
+        updatedSections[sectionIndex].questions.push({
+            questionText: "",
+            questionId: generateQuestionId(
+                sectionIndex,
+                updatedSections[sectionIndex].questions.length
+            ),
+            questionType: "Number", // Default type
+            options: [],
+            suffix: "",
+        });
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: updatedSections,
+        }));
+    };
+
+    const removeQuestion = (sectionIndex, questionIndex) => {
+        const updatedSections = [...instrumentData.sections];
+        updatedSections[sectionIndex].questions = updatedSections[
+            sectionIndex
+        ].questions.filter((_, index) => index !== questionIndex);
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: updatedSections,
+        }));
+    };
+
+    const addOption = (sectionIndex, questionIndex) => {
+        const updatedSections = [...instrumentData.sections];
+        updatedSections[sectionIndex].questions[questionIndex].options.push("");
+        setInstrumentData((prevData) => ({
+            ...prevData,
+            sections: updatedSections,
+        }));
+    };
+
     const removeOption = (sectionIndex, questionIndex, optionIndex) => {
         const updatedSections = [...instrumentData.sections];
         updatedSections[sectionIndex].questions[questionIndex].options =
             updatedSections[sectionIndex].questions[
                 questionIndex
-            ].options.filter((_, i) => i !== optionIndex);
+            ].options.filter((_, index) => index !== optionIndex);
         setInstrumentData((prevData) => ({
             ...prevData,
             sections: updatedSections,
         }));
     };
 
-    const addFormula = (sectionIndex) => {
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: prevData.sections.map((section, idx) =>
-                idx === sectionIndex
-                    ? {
-                          ...section,
-                          formulas: [...section.formulas, ""], // Add an empty formula
-                      }
-                    : section
-            ),
-        }));
-    };
-    const handleFormulaChange = (e, sectionIndex, formulaIndex) => {
-        const { value } = e.target;
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].formulas[formulaIndex] = value;
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
-
-    const removeFormula = (sectionIndex, formulaIndex) => {
-        const updatedSections = [...instrumentData.sections];
-        updatedSections[sectionIndex].formulas = updatedSections[
-            sectionIndex
-        ].formulas.filter((_, i) => i !== formulaIndex);
-        setInstrumentData((prevData) => ({
-            ...prevData,
-            sections: updatedSections,
-        }));
-    };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        try {
-            // Submit instrument data
-            const response = await fetch(
-                "http://localhost:9000/api/add/instruments",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        sdg_id: instrumentData.sdg_id,
-                        subtitle: instrumentData.subtitle,
-                    }),
-                }
-            );
-            if (!response.ok) {
-                throw new Error("Network response was not ok.");
-            }
+        console.log(instrumentData, "asdasdasdasd");
 
-            const responseData = await response.json();
+        const updatedInstrument = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:9000/api/update/instrument/${instrumentData.instrument_id}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            sdg_id: instrumentData.sdg_id,
+                            subtitle: instrumentData.subtitle,
+                        }),
+                    }
+                );
+                const data = await response.json();
 
-            // Submit sections and questions
-            await Promise.all(
-                instrumentData.sections.map(async (section) => {
-                    const responseSection = await fetch(
-                        "http://localhost:9000/api/add/sections",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                section_content: section.content,
-                                instrument_id: responseData.instrument_id,
-                            }),
+                if (response.ok) {
+                    instrumentData.sections.map(async (section) => {
+                        if (section.section_id) {
+                            const response = await fetch(
+                                `http://localhost:9000/api/update/section/${section.section_id}`,
+                                {
+                                    method: "PATCH",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        content: section.content,
+                                    }),
+                                }
+                            );
+                            const data = await response.json();
+                        } else {
+                            const response = await fetch(
+                                `http://localhost:9000/api/add/sections/`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        instrument_id:
+                                            instrumentData.instrument_id,
+                                        section_content: section.content,
+                                    }),
+                                }
+                            );
+                            const data = await response.json();
                         }
-                    );
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
 
-                    const responseSectionData = await responseSection.json();
-
-                    await Promise.all(
-                        section.questions.map(async (questionData) => {
-                            const responseQuestion = await fetch(
-                                "http://localhost:9000/api/add/questions",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        question: questionData.questionText,
-                                        type: questionData.questionType,
-                                        suffix: questionData.suffix,
-                                        sub_id: questionData.questionId,
-                                        section_id:
-                                            responseSectionData.section_id,
-                                    }),
-                                }
-                            );
-                            if (!responseQuestion.ok) {
-                                throw new Error("Network response was not ok.");
-                            }
-
-                            const responseQuestionData =
-                                await responseQuestion.json();
-
-                            if (
-                                questionData.questionType === "Multiple Options"
-                            ) {
-                                await Promise.all(
-                                    questionData.options.map(async (option) => {
-                                        const responseOption = await fetch(
-                                            "http://localhost:9000/api/add/options",
-                                            {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type":
-                                                        "application/json",
-                                                },
-                                                body: JSON.stringify({
-                                                    option,
-                                                    question_id:
-                                                        responseQuestionData.question_id,
-                                                }),
-                                            }
-                                        );
-                                        if (!responseOption.ok) {
-                                            throw new Error(
-                                                "Network response was not ok."
-                                            );
-                                        }
-                                    })
-                                );
-                            }
-                        })
-                    );
-
-                    // Submit formulas for the section
-                    await Promise.all(
-                        section.formulas.map(async (formula) => {
-                            const responseFormula = await fetch(
-                                "http://localhost:9000/api/add/formulas",
-                                {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        formula: formula,
-                                        section_id:
-                                            responseSectionData.section_id,
-                                    }),
-                                }
-                            );
-                            if (!responseFormula.ok) {
-                                throw new Error("Network response was not ok.");
-                            }
-                        })
-                    );
-                })
-            );
-
-            navigate("/csd/instruments");
-        } catch (error) {
-            console.error("Error submitting instrument data:", error);
-            // Handle error state or display error message to user
-        }
+        updatedInstrument();
     };
 
     return (
@@ -414,7 +372,7 @@ const AddInstrumentPage = () => {
             <Sidebar />
             <main className="h-full w-[80%] border overflow-auto">
                 <div className="header py-5 px-7 flex justify-between items-center">
-                    <h1 className="text-2xl text-gray-900">Add Instruments</h1>
+                    <h1 className="text-2xl text-gray-900">Edit Instrument</h1>
                     <Link
                         to="/csd/instruments"
                         className="bg-blue-600 text-white text-base px-6 py-2"
@@ -438,6 +396,7 @@ const AddInstrumentPage = () => {
                                         className="form__input border mt-1 block p-2 rounded-md shadow-sm sm:text-sm focus:outline-none w-full"
                                         value={instrumentData.sdg_id}
                                         onChange={handleInputChange}
+                                        required
                                     >
                                         <option value="">Select an SDG</option>
                                         {sdgs.map((sdg) => (
@@ -462,10 +421,10 @@ const AddInstrumentPage = () => {
                                         type="text"
                                         name="subtitle"
                                         placeholder="Enter subtitle"
-                                        className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none "
+                                        className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none"
                                         value={instrumentData.subtitle}
                                         onChange={handleInputChange}
-                                        required={true}
+                                        required
                                     />
                                 </label>
                             </div>
@@ -490,27 +449,27 @@ const AddInstrumentPage = () => {
                                                 <label className="form-control w-full">
                                                     <div className="label">
                                                         <span className="label-text">
-                                                            Content
+                                                            Section Content
                                                         </span>
                                                     </div>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter section content"
+                                                        className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none"
+                                                        value={section.content}
+                                                        onChange={(e) =>
+                                                            handleSectionContentChange(
+                                                                e,
+                                                                sectionIndex
+                                                            )
+                                                        }
+                                                        required
+                                                    />
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    name="content"
-                                                    placeholder="Enter content"
-                                                    className="form__input border mt-1 block p-2 rounded-md shadow-sm sm:text-sm focus:outline-none w-full"
-                                                    value={section.content}
-                                                    onChange={(e) =>
-                                                        handleSectionContentChange(
-                                                            e,
-                                                            sectionIndex
-                                                        )
-                                                    }
-                                                />
                                             </div>
                                             <button
                                                 type="button"
-                                                className="bg-blue-600 text-white text-sm px-6 py-2 mt-2 h-fit"
+                                                className="bg-red-600 text-white text-sm px-4 py-2 h-fit"
                                                 onClick={() =>
                                                     removeSection(sectionIndex)
                                                 }
@@ -520,29 +479,28 @@ const AddInstrumentPage = () => {
                                                 />
                                             </button>
                                         </div>
+
                                         {section.questions.map(
                                             (question, questionIndex) => (
                                                 <div
                                                     key={questionIndex}
-                                                    className="question-group my-4"
+                                                    className="question-group my-4 flex flex-col"
                                                 >
-                                                    <div className="flex gap-2 items-end">
-                                                        <div className="input-group w-[60%]">
+                                                    <div className="flex gap-2">
+                                                        <div className="input-group w-[70%]">
                                                             <label className="form-control w-full">
                                                                 <div className="label">
                                                                     <span className="label-text">
-                                                                        {
-                                                                            question.questionId
-                                                                        }
-                                                                        .
-                                                                        Question{" "}
+                                                                        {question.questionId +
+                                                                            ". "}
+                                                                        Question
                                                                     </span>
                                                                 </div>
                                                                 <input
                                                                     type="text"
                                                                     name="questionText"
-                                                                    placeholder="Enter question"
-                                                                    className="form__input border mt-1 block p-2 rounded-md shadow-sm sm:text-sm focus:outline-none w-full   "
+                                                                    placeholder="Enter question text"
+                                                                    className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none"
                                                                     value={
                                                                         question.questionText
                                                                     }
@@ -555,51 +513,59 @@ const AddInstrumentPage = () => {
                                                                             questionIndex
                                                                         )
                                                                     }
+                                                                    required
                                                                 />
                                                             </label>
                                                         </div>
-                                                        {question.questionType ===
-                                                            "Number" && (
-                                                            <div className="input-group w-[15%]">
-                                                                <label className="form-control w-full max-w-xs">
-                                                                    <div className="label">
-                                                                        <span className="label-text">
-                                                                            Suffix
-                                                                            (Optional)
-                                                                        </span>
-                                                                    </div>
-                                                                    <input
-                                                                        type="text"
-                                                                        name="suffix"
-                                                                        placeholder="e.g., %, kg"
-                                                                        className="form__input border mt-1 block p-2 rounded-md shadow-sm sm:text-sm focus:outline-none w-full"
-                                                                        value={
-                                                                            question.suffix
-                                                                        }
-                                                                        onChange={(
-                                                                            e
-                                                                        ) =>
-                                                                            handleQuestionChange(
-                                                                                e,
-                                                                                sectionIndex,
-                                                                                questionIndex
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                            </div>
-                                                        )}
+
                                                         <div className="input-group w-[20%]">
-                                                            <label className="form-control w-full max-w-xs">
+                                                            <label className="form-control w-full">
                                                                 <div className="label">
                                                                     <span className="label-text">
-                                                                        Question
+                                                                        Suffix
+                                                                    </span>
+                                                                </div>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none"
+                                                                    value={
+                                                                        question.suffix
+                                                                    }
+                                                                    onChange={(
+                                                                        e
+                                                                    ) => {
+                                                                        const updatedSections =
+                                                                            [
+                                                                                ...instrumentData.sections,
+                                                                            ];
+                                                                        updatedSections[
+                                                                            sectionIndex
+                                                                        ].questions[
+                                                                            questionIndex
+                                                                        ].suffix =
+                                                                            e.target.value;
+                                                                        setInstrumentData(
+                                                                            {
+                                                                                ...instrumentData,
+                                                                                sections:
+                                                                                    updatedSections,
+                                                                            }
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        </div>
+
+                                                        <div className="input-group w-[20%]">
+                                                            <label className="form-control w-full">
+                                                                <div className="label">
+                                                                    <span className="label-text">
                                                                         Type
                                                                     </span>
                                                                 </div>
                                                                 <select
                                                                     name="questionType"
-                                                                    className="form__input border mt-1 block p-2 rounded-md shadow-sm sm:text-sm focus:outline-none w-full"
+                                                                    className="form__input border mt-1 block w-full p-2 rounded-md shadow-sm sm:text-sm focus:outline-none"
                                                                     value={
                                                                         question.questionType
                                                                     }
@@ -623,10 +589,9 @@ const AddInstrumentPage = () => {
                                                                 </select>
                                                             </label>
                                                         </div>
-
                                                         <button
                                                             type="button"
-                                                            className="bg-blue-600 text-white text-sm px-6 py-2 mt-2"
+                                                            className="bg-red-600 text-white text-sm px-4 py-2 h-fit"
                                                             onClick={() =>
                                                                 removeQuestion(
                                                                     sectionIndex,
@@ -641,8 +606,8 @@ const AddInstrumentPage = () => {
                                                     </div>
                                                     {question.questionType ===
                                                         "Multiple Options" && (
-                                                        <div className="input-group">
-                                                            <label className="form-control w-[10%]">
+                                                        <div className="input-group mt-2">
+                                                            <label className="form-control w-full">
                                                                 <div className="label">
                                                                     <span className="label-text">
                                                                         Options
@@ -664,7 +629,7 @@ const AddInstrumentPage = () => {
                                                                                 placeholder="Enter option"
                                                                                 className="form__input border mt-1 block px-3 py-4 rounded-md shadow-sm sm:text-sm focus:outline-none w-full"
                                                                                 value={
-                                                                                    option
+                                                                                    option.option
                                                                                 }
                                                                                 onChange={(
                                                                                     e
@@ -679,7 +644,7 @@ const AddInstrumentPage = () => {
                                                                             />
                                                                             <button
                                                                                 type="button"
-                                                                                className="bg-blue-600 text-white text-sm px-6 py-2 mt-2"
+                                                                                className="bg-red-600 text-white text-sm px-4 py-2 mt-2"
                                                                                 onClick={() =>
                                                                                     removeOption(
                                                                                         sectionIndex,
@@ -724,68 +689,6 @@ const AddInstrumentPage = () => {
                                         >
                                             Add Question
                                         </button>
-                                        {section.formulas &&
-                                            section.formulas.map(
-                                                (formula, formulaIndex) => (
-                                                    <div
-                                                        key={formulaIndex}
-                                                        className="formula-group my-2"
-                                                    >
-                                                        <div className="input-group w-full">
-                                                            <label className="form-control w-full">
-                                                                <div className="label">
-                                                                    <span className="label-text">
-                                                                        Formula
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex gap-2">
-                                                                    <textarea
-                                                                        placeholder="Enter formula"
-                                                                        className="form__input border mt-1 block px-3 py-4 rounded-md shadow-sm sm:text-sm focus:outline-none w-full h-32"
-                                                                        value={
-                                                                            formula
-                                                                        }
-                                                                        onChange={(
-                                                                            e
-                                                                        ) =>
-                                                                            handleFormulaChange(
-                                                                                e,
-                                                                                sectionIndex,
-                                                                                formulaIndex
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        className="bg-blue-600 text-white text-sm px-6 py-2 mt-2 h-fit"
-                                                                        onClick={() =>
-                                                                            removeFormula(
-                                                                                sectionIndex,
-                                                                                formulaIndex
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <FontAwesomeIcon
-                                                                            icon={
-                                                                                faTrash
-                                                                            }
-                                                                        />
-                                                                    </button>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            )}
-                                        <button
-                                            type="button"
-                                            className="bg-blue-600 text-white text-sm px-6 py-2 mt-2"
-                                            onClick={() =>
-                                                addFormula(sectionIndex)
-                                            }
-                                        >
-                                            Add Formula
-                                        </button>
                                     </div>
                                 )
                             )}
@@ -802,7 +705,7 @@ const AddInstrumentPage = () => {
                             type="submit"
                             className="bg-blue-600 text-white text-sm float-end px-6 py-2 my-2"
                         >
-                            Submit
+                            Update
                         </button>
                     </form>
                 </div>
@@ -811,4 +714,4 @@ const AddInstrumentPage = () => {
     );
 };
 
-export default AddInstrumentPage;
+export default EditInstrument;

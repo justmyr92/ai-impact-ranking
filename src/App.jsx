@@ -9,6 +9,7 @@ import SDDashboardPage from "./pages/(sd)/SDDashboardPage";
 import SDRecordPage from "./pages/(sd)/SDRecordPage";
 import CSDRecordPage from "./pages/(csd)/CSDRecordPage";
 import FIleRanking from "./pages/(csd)/FIleRanking";
+import EditInstrument from "./pages/(csd)/EditInstrument";
 
 function App() {
     return (
@@ -39,6 +40,10 @@ function App() {
 
                 <Route path="/sd/records" element={<SDRecordPage />} />
                 <Route path="/csd/records" element={<CSDRecordPage />} />
+                <Route
+                    path="/csd/edit-instrument/:instrument_id"
+                    element={<EditInstrument />}
+                />
             </Routes>
         </BrowserRouter>
     );

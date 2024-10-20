@@ -306,6 +306,15 @@ const UpdateRecordStatus = ({
             });
 
             setUpdatedFormulas(updatedFormulasV); // Log the updated formulas with replaced values
+            console.log(
+                "Updated formulas with replaced values:",
+                updatedFormulasV,
+                updatedFormulasV.reduce((acc, curr) => acc + curr.score, 0)
+            );
+
+            setTotal(
+                updatedFormulasV.reduce((acc, curr) => acc + curr.score, 0)
+            );
         }
     }, [sumByQuestionID, formulas]);
 
@@ -356,221 +365,6 @@ const UpdateRecordStatus = ({
         const storedRole = localStorage.getItem("role");
         setRole(Number(storedRole)); // Make sure role is treated as a number
     }, []);
-
-    // return (
-    //     <div>
-    //         <h2>Record Submission Form for SDG: {selectedSdg}</h2>
-    //         <h3>Year: {selectedYear}</h3>
-    //         <form onSubmit={handleSubmit}>
-    //             <div>
-    //                 {error && <p className="text-red-500">{error}</p>}
-    //                 {instruments.length > 0 ? (
-    //                     <table className="min-w-full divide-y divide-gray-200">
-    //                         <thead className="bg-gray-100"></thead>
-    //                         <tbody className="bg-white divide-y divide-gray-200 text-sm">
-    //                             {instruments.map((instrument, index) => (
-    //                                 <React.Fragment
-    //                                     key={instrument.instrument_id}
-    //                                 >
-    //                                     <tr>
-    //                                         <td
-    //                                             colSpan={
-    //                                                 flattenedCampuses.length + 2
-    //                                             }
-    //                                             className="px-6 py-4 font-semibold text-left bg-gray-100"
-    //                                         >
-    //                                             {instrument.sdg_subtitle}
-    //                                         </td>
-    //                                     </tr>
-    //                                     {instrument.section_contents.length >
-    //                                     0 ? (
-    //                                         instrument.section_contents.map(
-    //                                             (section) => (
-    //                                                 <React.Fragment
-    //                                                     key={section.section_id}
-    //                                                 >
-    //                                                     <tr>
-    //                                                         <td className="px-6 py-4 whitespace-nowrap">
-    //                                                             {
-    //                                                                 section.section_content
-    //                                                             }
-    //                                                         </td>
-    //                                                         {flattenedCampuses.map(
-    //                                                             (campus) => (
-    //                                                                 <td
-    //                                                                     key={
-    //                                                                         campus.id
-    //                                                                     }
-    //                                                                     className="border px-6 py-3"
-    //                                                                 >
-    //                                                                     {
-    //                                                                         campus.name
-    //                                                                     }
-    //                                                                 </td>
-    //                                                             )
-    //                                                         )}
-    //                                                         <td className="px-6 py-4 whitespace-nowrap">
-    //                                                             Score
-    //                                                         </td>
-    //                                                     </tr>
-    //                                                     {section.questions.map(
-    //                                                         (
-    //                                                             question,
-    //                                                             index
-    //                                                         ) => (
-    //                                                             <React.Fragment
-    //                                                                 key={
-    //                                                                     question.question_id
-    //                                                                 }
-    //                                                             >
-    //                                                                 <tr>
-    //                                                                     <td className="border px-4 py-2 text-start whitespace-nowrap align-top">
-    //                                                                         {index +
-    //                                                                             1}
-    //                                                                         .{" "}
-    //                                                                         {
-    //                                                                             question.question
-    //                                                                         }
-    //                                                                     </td>
-    //                                                                     {flattenedCampuses.map(
-    //                                                                         (
-    //                                                                             campus
-    //                                                                         ) => (
-    //                                                                             <td
-    //                                                                                 key={
-    //                                                                                     campus.id
-    //                                                                                 }
-    //                                                                                 className="border px-4 py-2"
-    //                                                                             >
-    //                                                                                 <input
-    //                                                                                     type="number"
-    //                                                                                     min="0"
-    //                                                                                     value={
-    //                                                                                         answers.find(
-    //                                                                                             (
-    //                                                                                                 ans
-    //                                                                                             ) =>
-    //                                                                                                 ans.question_id ===
-    //                                                                                                     question.question_id &&
-    //                                                                                                 ans.campus_id ===
-    //                                                                                                     campus.id
-    //                                                                                         )
-    //                                                                                             ?.value ||
-    //                                                                                         0
-    //                                                                                     }
-    //                                                                                     onChange={(
-    //                                                                                         e
-    //                                                                                     ) =>
-    //                                                                                         handleInputChange(
-    //                                                                                             e,
-    //                                                                                             question.question_id,
-    //                                                                                             campus.id
-    //                                                                                         )
-    //                                                                                     }
-    //                                                                                     className="border rounded p-1 w-[5rem]"
-    //                                                                                 />
-    //                                                                             </td>
-    //                                                                         )
-    //                                                                     )}
-    //                                                                     <td className="border px-4 py-2 text-start whitespace-nowrap align-top">
-    //                                                                         {updatedFormulas.find(
-    //                                                                             (
-    //                                                                                 formula
-    //                                                                             ) =>
-    //                                                                                 formula.section_id ===
-    //                                                                                 section.section_id
-    //                                                                         )
-    //                                                                             ?.score ||
-    //                                                                             0}
-    //                                                                     </td>
-    //                                                                 </tr>
-    //                                                             </React.Fragment>
-    //                                                         )
-    //                                                     )}
-    //                                                     <tr>
-    //                                                         <td
-    //                                                             colSpan={
-    //                                                                 flattenedCampuses.length +
-    //                                                                 2
-    //                                                             }
-    //                                                             className="border px-4 py-2 text-end whitespace-nowrap align-top"
-    //                                                         >
-    //                                                             {updatedFormulas
-    //                                                                 .filter(
-    //                                                                     (
-    //                                                                         formula
-    //                                                                     ) =>
-    //                                                                         formula.section_id ===
-    //                                                                         section.section_id
-    //                                                                 )
-    //                                                                 .reduce(
-    //                                                                     (
-    //                                                                         acc,
-    //                                                                         curr
-    //                                                                     ) =>
-    //                                                                         acc +
-    //                                                                         (curr.score ||
-    //                                                                             0),
-    //                                                                     0
-    //                                                                 )}
-    //                                                         </td>
-    //                                                     </tr>
-    //                                                 </React.Fragment>
-    //                                             )
-    //                                         )
-    //                                     ) : (
-    //                                         <tr>
-    //                                             <td
-    //                                                 colSpan={
-    //                                                     flattenedCampuses.length +
-    //                                                     1
-    //                                                 }
-    //                                                 className="px-6 py-4 text-center"
-    //                                             >
-    //                                                 No sections available
-    //                                             </td>
-    //                                         </tr>
-    //                                     )}
-    //                                 </React.Fragment>
-    //                             ))}
-    //                         </tbody>
-    //                     </table>
-    //                 ) : (
-    //                     <p>No instruments available</p>
-    //                 )}
-    //             </div>
-
-    //             <div>
-    //                 {error && <p className="text-red-500">{error}</p>}
-    //                 {/* Dropdown for status selection */}
-    //                 <label htmlFor="status" className="block mb-2">
-    //                     Status:
-    //                 </label>
-    //                 <select
-    //                     id="status"
-    //                     onChange={(e) => setStatus(Number(e.target.value))} // Update status on selection
-    //                     className="border rounded p-1 w-full"
-    //                 >
-    //                     <option value={1} selected={recordStatus === 1}>
-    //                         To be Approved
-    //                     </option>
-    //                     <option value={2} selected={recordStatus === 2}>
-    //                         To be Revised
-    //                     </option>
-    //                     <option value={3} selected={recordStatus === 3}>
-    //                         Approved
-    //                     </option>
-    //                 </select>
-    //             </div>
-    //             <button
-    //                 type="submit"
-    //                 className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-    //             >
-    //                 Submit Status
-    //             </button>
-    //         </form>
-    //     </div>
-    // );
 
     return (
         <div>
@@ -624,9 +418,6 @@ const UpdateRecordStatus = ({
                                                                     </td>
                                                                 )
                                                             )}
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                Score
-                                                            </td>
                                                         </tr>
                                                         {section.questions.map(
                                                             (
@@ -706,17 +497,6 @@ const UpdateRecordStatus = ({
                                                                                 </td>
                                                                             )
                                                                         )}
-                                                                        <td className="border px-4 py-2 text-start whitespace-nowrap align-top">
-                                                                            {updatedFormulas.find(
-                                                                                (
-                                                                                    formula
-                                                                                ) =>
-                                                                                    formula.section_id ===
-                                                                                    section.section_id
-                                                                            )
-                                                                                ?.score ||
-                                                                                0}
-                                                                        </td>
                                                                     </tr>
                                                                 </React.Fragment>
                                                             )
@@ -729,6 +509,9 @@ const UpdateRecordStatus = ({
                                                                 }
                                                                 className="border px-4 py-2 text-end whitespace-nowrap align-top"
                                                             >
+                                                                <span className="font-semibold mr-2">
+                                                                    Score:
+                                                                </span>
                                                                 {updatedFormulas
                                                                     .filter(
                                                                         (

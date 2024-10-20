@@ -46,68 +46,64 @@ const ViewInstrumentPage = () => {
     }, [instrument]);
 
     return (
-        <section className="h-screen flex bg-gray-100">
+        <section className="h-screen flex">
             <Sidebar />
-            <main className="h-full w-[80%] border overflow-auto p-6">
+            <main className="h-full w-[80%] border overflow-auto">
                 <div className="header py-5 px-7 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Instrument Details
+                    <h1 className="text-2xl text-gray-900">
+                        View Instrument Details
                     </h1>
                     <Link
                         to="/csd/instruments"
-                        className="bg-blue-600 text-white text-base px-6 py-2 rounded hover:bg-blue-700 transition duration-300"
+                        className="bg-blue-600 text-white text-base px-6 py-2"
                     >
                         <FontAwesomeIcon icon={faArrowLeft} /> Back
                     </Link>
                 </div>
                 <hr className="mb-6" />
                 <div className="bg-white shadow rounded-lg p-6">
-                    <h2 className="text-xl font-semibold mb-6">
-                        Instrument Information
-                    </h2>
-
                     <table className="w-full table-auto border-collapse">
                         <tbody>
-                            <tr className="border-b bg-gray-50">
-                                <th className="text-left p-4 font-semibold">
+                            <tr>
+                                <th
+                                    className="bg-red-500 text-white p-4 text-left"
+                                    colSpan={2}
+                                >
+                                    Instrument Information
+                                </th>
+                            </tr>
+                            <tr className="border">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">
                                     SDG Indicator
                                 </th>
-                                <td className="p-4">
+                                <td className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                                     SDG{" "}
                                     {instrument?.number +
                                         ": " +
                                         instrument?.title}
                                 </td>
                             </tr>
-                            <tr className="border-b">
-                                <th className="text-left p-4 font-semibold">
+                            <tr className="border bg-red-100">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">
                                     SDG Subtitle
                                 </th>
-                                <td className="p-4">
+                                <td className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                                     {instrument?.sdg_subtitle}
                                 </td>
                             </tr>
-                            <tr className="border-b bg-gray-50">
-                                <th className="text-left p-4 font-semibold">
+                            <tr className="border">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">
                                     SDG Section
                                 </th>
-                                <td className="p-4">
+                                <td className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                                     {instrument?.section_content}
                                 </td>
                             </tr>
-                            <tr className="border-b bg-gray-200 text-center">
-                                <th
-                                    colSpan={2}
-                                    className="p-4 text-lg font-bold"
-                                >
+                            <tr className="border bg-red-100">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">
                                     Questions
                                 </th>
-                            </tr>
-                            <tr className="border-b">
-                                <th className="text-left p-4 font-semibold">
-                                    Question
-                                </th>
-                                <td className="p-4">
+                                <td className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                                     {questions.map((question, index) => (
                                         <p
                                             key={index}
@@ -122,10 +118,10 @@ const ViewInstrumentPage = () => {
                                 </td>
                             </tr>
                             <tr className="border-b bg-gray-50">
-                                <th className="text-left p-4 font-semibold">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">
                                     Formula
                                 </th>
-                                <td className="p-4">
+                                <td className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
                                     {formula?.formula
                                         ? formula?.formula
                                         : "No formula available"}

@@ -99,21 +99,21 @@ const SDOfficePage = () => {
                         />
                     </div>
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-red-500">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     #
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Name
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Email
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Campus Name
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                     Action
                                 </th>
                             </tr>
@@ -121,22 +121,29 @@ const SDOfficePage = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {sdOffice ? (
                                 sdOffice.map((row, index) => (
-                                    <tr key={row.user_id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <tr
+                                        key={row.user_id}
+                                        className={
+                                            index % 2 === 0
+                                                ? "bg-white hover:bg-red-200"
+                                                : "bg-red-100 hover:bg-red-200"
+                                        }
+                                    >
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-black">
                                             {index + 1}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-black">
                                             {row.name}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-black">
                                             {row.email}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-black">
                                             {row.campus_name}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <td className="px-6 py-3 whitespace-nowrap text-sm text-black">
                                             <button
-                                                className="text-blue-600 hover:text-blue-900"
+                                                className="bg-red-500 text-white hover:bg-red-600 p-1.5 mr-2"
                                                 onClick={() =>
                                                     handleEditClick(row.user_id)
                                                 } // Call the handler to open the modal
@@ -151,8 +158,8 @@ const SDOfficePage = () => {
                             ) : (
                                 <tr>
                                     <td
-                                        colSpan="5"
-                                        className="px-6 py-4 whitespace-nowrap text-center"
+                                        className="px-6 py-3 whitespace-nowrap text-sm font-medium"
+                                        colSpan={5}
                                     >
                                         No Data Found
                                     </td>

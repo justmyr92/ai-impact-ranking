@@ -22,6 +22,25 @@ router.post("/add/instruments", async (req, res) => {
     }
 });
 
+router.get(
+    "/get/instrument-by-instrument-id/:instrument_id",
+    async (req, res) => {
+        try {
+            const { instrument_id } = req.params;
+            // Attempting to insert into the database
+            const instrument = await pool.query(
+                "SELECT * FROM instrument WHERE instrument_id = $1",
+                [instrument_id]
+            );
+
+            res.json(instrument.rows); // Return the inserted instrument data
+        } catch (error) {
+            console.error("Error adding instrument:", error);
+            res.status(500).json({ error: "Internal server error" });
+        }
+    }
+);
+
 router.post("/add/sections", async (req, res) => {
     try {
         const { section_content, instrument_id } = req.body;
@@ -83,6 +102,52 @@ router.post("/add/questions", async (req, res) => {
     }
 });
 
+router.get("/get/options/:question_id", async (req, res) => {
+    try {
+        const { question_id } = req.params;
+        const options = await pool.query(
+            "select * from options where question_id = $1",
+            [question_id]
+        );
+
+        res.json(options.rows); // Return the inserted option data
+    } catch (error) {
+        console.error("Error adding option:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.patch("/update/instrument/:instrument_id", async (req, res) => {
+    try {
+        const { instrument_id } = req.params;
+        const { subtitle, sdg_id } = req.body;
+
+        const updateInstrument = await pool.query(
+            "UPDATE instrument SET sdg_subtitle = $1, sdg_id = $2 WHERE instrument_id = $3 RETURNING *",
+            [subtitle, sdg_id, instrument_id]
+        );
+        res.json(updateInstrument.rows); // Return the inserted option data
+    } catch (error) {
+        console.error("Error updating instrument:", error);
+    }
+});
+
+router.patch("/update/section/:section_id", async (req, res) => {
+    try {
+        const { section_id } = req.params;
+        const { content } = req.body;
+
+        const updatedSection = await pool.query(
+            "UPDATE section SET section_content = $1 WHERE section_id = $2 RETURNING *",
+            [content, section_id]
+        );
+
+        res.json(updatedSection.rows);
+    } catch (error) {
+        console.error("Error updating section:", error);
+    }
+});
+
 router.post("/add/options", async (req, res) => {
     try {
         const { option, question_id } = req.body;
@@ -126,6 +191,21 @@ router.get("/get/instrumentsbysdgandsection", async (req, res) => {
             "SELECT * FROM instrument JOIN sdg ON instrument.sdg_id = sdg.sdg_id JOIN section ON instrument.instrument_id = section.instrument_id"
         );
         res.json(instruments.rows);
+    } catch (error) {
+        console.error("Error getting instruments:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+//select instrument, sdg and section
+router.get("/get/section-by-instrument-id/:instrument_id", async (req, res) => {
+    try {
+        const { instrument_id } = req.params;
+        const sections = await pool.query(
+            "SELECT * FROM section where instrument_id = $1",
+            [instrument_id]
+        );
+        res.json(sections.rows);
     } catch (error) {
         console.error("Error getting instruments:", error);
         res.status(500).json({ error: "Internal server error" });

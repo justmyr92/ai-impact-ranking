@@ -3,6 +3,8 @@ import Sidebar from "../../components/Sidebar";
 import RecordSubmissionForm from "../../components/RecordSubmissionForm";
 import UpdateRecordStatus from "../../components/UpdateRecordStatus";
 import ViewRecords from "../../components/ViewRecords";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faList } from "@fortawesome/free-solid-svg-icons";
 
 const CSDRecordPage = () => {
     const [selectedYear, setSelectedYear] = useState("2023");
@@ -145,7 +147,10 @@ const CSDRecordPage = () => {
             <Sidebar />
             <main className="h-full w-[80%] border overflow-auto">
                 <div className="header py-5 px-7 flex justify-between items-center">
-                    <h1 className="text-2xl text-gray-900">Record</h1>
+                    <h1 className="text-2xl text-gray-900">
+                        <FontAwesomeIcon icon={faList} className="mr-2" />
+                        Record
+                    </h1>
                 </div>
                 <hr />
                 <div className="py-5 px-7">
@@ -246,15 +251,9 @@ const CSDRecordPage = () => {
                             />
                         </>
                     ) : (
-                        // <ViewRecords
-                        //     selectedSdg={selectedSdg}
-                        //     selectedYear={selectedYear}
-                        //     selectedSD={selectedSdOffice}
-                        // />
-
                         <div className="mt-4">
-                            {error && (
-                                <div className="mt-4 p-4 border border-red-500 bg-red-100 text-red-700 rounded-md flex items-center">
+                            {error ? (
+                                <div className="mt-4 p-4 border border-blue-500 bg-blue-100 text-blue-700 rounded-md flex items-center">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         className="h-5 w-5 mr-2"
@@ -263,13 +262,32 @@ const CSDRecordPage = () => {
                                     >
                                         <path
                                             fillRule="evenodd"
-                                            d="M18 8a1 1 0 00-1-1H3a1 1 0 100 2h14a1 1 0 001-1zM9 3a1 1 0 011 1v6a1 1 0 11-2 0V4a1 1 0 011-1zm1 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"
+                                            d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 7h2v4H9V7zm0 6h2v2H9v-2z"
                                             clipRule="evenodd"
                                         />
                                     </svg>
                                     <p className="text-sm">
                                         <strong>Error:</strong> {error}. Please
                                         check the details and try again.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="mt-4 p-4 border border-blue-500 bg-blue-100 text-blue-700 rounded-md flex items-center">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-5 w-5 mr-2"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 7h2v4H9V7zm0 6h2v2H9v-2z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    <p className="text-sm">
+                                        <strong>Notice:</strong> There are no
+                                        existing records.
                                     </p>
                                 </div>
                             )}

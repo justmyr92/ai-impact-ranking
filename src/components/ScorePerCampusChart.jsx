@@ -228,7 +228,7 @@ const ScorePerCampusChart = ({ setScores, setTopCampus, selectedYear }) => {
             // );
             setTopCampus(top4Campuses);
         }
-    }, [formulas, records, campuses, selectedSdg]);
+    }, [formulas, records, campuses]);
 
     return (
         <Card className="w-[75%]">
