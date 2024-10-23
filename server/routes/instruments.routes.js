@@ -87,7 +87,7 @@ router.get("/get-records-count-by-status", async (req, res) => {
 router.post("/add/questions", async (req, res) => {
     try {
         const { question, type, sub_id, suffix, section_id } = req.body;
-
+        console.log(question, type, sub_id, suffix, section_id);
         const question_id = "Q" + Math.floor(Math.random() * 900000 + 100000);
 
         const newQuestion = await pool.query(
@@ -99,6 +99,22 @@ router.post("/add/questions", async (req, res) => {
     } catch (error) {
         console.error("Error adding question:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.patch("/update/question/:question_id", async (req, res) => {
+    try {
+        const { question_id } = req.params;
+        const { sub_id, question, type, suffix } = req.body;
+        console.log(req.body, "Asd");
+        const updatedQuestion = await pool.query(
+            "UPDATE question SET sub_id = $1, question = $2, type = $3, suffix = $4 WHERE question_id = $5 RETURNING *",
+            [sub_id, question, type, suffix, question_id]
+        );
+
+        res.json(updatedQuestion.rows);
+    } catch (error) {
+        console.error("Error updating question:", error);
     }
 });
 
@@ -163,6 +179,23 @@ router.post("/add/options", async (req, res) => {
     } catch (error) {
         console.error("Error adding option:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.patch("/update/options/:option_id", async (req, res) => {
+    try {
+        const { option_id } = req.params;
+        const { option } = req.body;
+
+        const updatedOption = await pool.query(
+            "UPDATE options SET option = $1 WHERE option_id = $2 RETURNING *",
+            [option, option_id]
+        );
+        res.json(
+            updatedOption.rows[0] // Return the updated option data
+        );
+    } catch (error) {
+        console.error("Error updating option:", error);
     }
 });
 

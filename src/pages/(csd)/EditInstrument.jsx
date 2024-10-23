@@ -71,7 +71,7 @@ const EditInstrument = () => {
                     `http://localhost:9000/api/get/instrument-by-instrument-id/${instrument_id}`
                 );
                 const iData = await iResponse.json();
-
+                console.log(iData, "asd");
                 // Fetch sections data
                 const sectionsResponse = await fetch(
                     `http://localhost:9000/api/get/section-by-instrument-id/${instrument_id}`
@@ -129,6 +129,7 @@ const EditInstrument = () => {
                                     `Question ${question.question_id} options: `,
                                     optionsData
                                 );
+
                                 return {
                                     question_id: question.question_id,
                                     questionId: question.sub_id,
@@ -164,6 +165,12 @@ const EditInstrument = () => {
 
         fetchInstrumentAndSections();
     }, [instrument_id]);
+
+    useEffect(() => {
+        if (instrument_id) {
+            console.log(instrumentData);
+        }
+    }, [instrumentData]);
 
     const generateQuestionId = (sectionIndex, questionIndex) => {
         // Determine the letter prefix based on the section index
@@ -204,13 +211,17 @@ const EditInstrument = () => {
         e,
         sectionIndex,
         questionIndex,
+        questionID,
         optionIndex
     ) => {
         const { value } = e.target;
         const updatedSections = [...instrumentData.sections];
         updatedSections[sectionIndex].questions[questionIndex].options[
             optionIndex
-        ] = value;
+        ] = {
+            option: value,
+            question_id: questionID,
+        };
         setInstrumentData((prevData) => ({
             ...prevData,
             sections: updatedSections,
@@ -326,6 +337,7 @@ const EditInstrument = () => {
 
                 if (response.ok) {
                     instrumentData.sections.map(async (section) => {
+                        // Update or add sections
                         if (section.section_id) {
                             const response = await fetch(
                                 `http://localhost:9000/api/update/section/${section.section_id}`,
@@ -357,6 +369,91 @@ const EditInstrument = () => {
                             );
                             const data = await response.json();
                         }
+
+                        // Update or add questions and their options
+                        section.questions.map(async (question) => {
+                            console.log(question);
+                            if (question.question_id) {
+                                // Update existing question
+                                const response = await fetch(
+                                    `http://localhost:9000/api/update/question/${question.question_id}`,
+                                    {
+                                        method: "PATCH",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            sub_id: question.questionId,
+                                            question: question.questionText,
+                                            type: question.questionType,
+                                            suffix: question.suffix,
+                                        }),
+                                    }
+                                );
+                                const data = await response.json();
+                            } else {
+                                // Add new question
+                                const response = await fetch(
+                                    `http://localhost:9000/api/add/questions/`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                            question: question.questionText,
+                                            type: question.questionType,
+                                            sub_id: question.questionId,
+                                            suffix: question.suffix,
+                                            section_id: section.section_id,
+                                        }),
+                                    }
+                                );
+                                const data = await response.json();
+                            }
+                            question.options &
+                                question.options.map(async (option) => {
+                                    console.log(
+                                        "Options                                    ",
+                                        option
+                                    );
+                                    if (option.option_id) {
+                                        // Update existing option
+                                        const response = await fetch(
+                                            `http://localhost:9000/api/update/options/${option.option_id}`,
+                                            {
+                                                method: "PATCH",
+                                                headers: {
+                                                    "Content-Type":
+                                                        "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    option: option.option,
+                                                }),
+                                            }
+                                        );
+                                        const data = await response.json();
+                                    } else {
+                                        // Add new option
+                                        const response = await fetch(
+                                            `http://localhost:9000/api/add/options/`,
+                                            {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type":
+                                                        "application/json",
+                                                },
+                                                body: JSON.stringify({
+                                                    option: option.option,
+                                                    question_id:
+                                                        question.question_id,
+                                                }),
+                                            }
+                                        );
+                                        const data = await response.json();
+                                    }
+                                });
+                        });
                     });
                 }
             } catch (error) {
@@ -579,7 +676,10 @@ const EditInstrument = () => {
                                                                         )
                                                                     }
                                                                 >
-                                                                    <option value="Number">
+                                                                    <option
+                                                                        value="Number"
+                                                                        selected
+                                                                    >
                                                                         Number
                                                                     </option>
                                                                     <option value="Multiple Options">
@@ -638,6 +738,7 @@ const EditInstrument = () => {
                                                                                         e,
                                                                                         sectionIndex,
                                                                                         questionIndex,
+                                                                                        question.question_id,
                                                                                         optionIndex
                                                                                     )
                                                                                 }
