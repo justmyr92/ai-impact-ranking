@@ -261,6 +261,22 @@ router.get("/get/instruments/:instrument_id", async (req, res) => {
     }
 });
 
+//update instument status
+router.patch("/update/instrument-status/:instrument_id", async (req, res) => {
+    try {
+        const { instrument_id } = req.params;
+        const { status } = req.body;
+        const updatedInstrument = await pool.query(
+            "Update instrument set status = $1 where instrument_id = $2",
+            [status, instrument_id]
+        );
+        res.json(updatedInstrument);
+    } catch (error) {
+        console.error("Error getting instruments:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 //select instrument, sdg and section
 router.get("/get/sections/:sdg_id", async (req, res) => {
     try {

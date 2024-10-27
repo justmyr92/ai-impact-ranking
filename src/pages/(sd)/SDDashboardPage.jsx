@@ -93,38 +93,6 @@ const SDDashboardPage = () => {
                     />
                 </div>
                 <Recommender selectedYear={selectedYear} />
-
-                <div className="flex gap-4 mb-2">
-                    <FileChart />
-                </div>
-                {/* <div className="p-4">
-                    {lowestScoreCampuses.length > 0 && (
-                        <div className="p-4">
-                            {lowestScoreCampuses.length > 0 && (
-                                <div>
-                                    <h2 className="text-lg">
-                                        Campuses with Lowest Score:
-                                    </h2>
-                                    <ul>
-                                        {lowestScoreCampuses.map((campus) => (
-                                            <li key={campus.name}>
-                                                {campus.name} - Score:{" "}
-                                                {campus.score}
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    <h3 className="text-lg mt-4">
-                                        Recommendations:
-                                    </h3>
-                                    <div className="bg-gray-100 p-4 rounded h-fit w-[100%]">
-                                        <pre>{recommendations}</pre>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div> */}
             </main>
         </section>
     );

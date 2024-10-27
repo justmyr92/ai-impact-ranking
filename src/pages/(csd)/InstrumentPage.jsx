@@ -123,6 +123,8 @@ const InstrumentsPage = () => {
         getInstrumentsData();
     }, [userRole]); // Add userRole to the dependency array
 
+    const [reload, setReload] = useState(false);
+
     // Filter instruments by search query and selected SDG ID
     const filteredInstruments = instruments.filter((instrument) => {
         const matchesSearchQuery =
@@ -140,6 +142,32 @@ const InstrumentsPage = () => {
             selectedSdg === "" || instrument.sdg_id === selectedSdg;
         return matchesSearchQuery && matchesSdg;
     });
+
+    const handleStatus = async (e, status, instrument_id) => {
+        e.preventDefault();
+        try {
+            const new_status = status === "active" ? "inactive" : "active";
+            const response = await fetch(
+                `http://localhost:9000/api/update/instrument-status/${instrument_id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ status: new_status }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+
+            const data = await response.json();
+            console.log("Status updated:", data);
+        } catch (error) {
+            console.error("Error fetching instruments:", error);
+        }
+    };
 
     return (
         <section className="h-screen flex">
@@ -235,6 +263,25 @@ const InstrumentsPage = () => {
                                                 </Link>
                                             ) : (
                                                 <>
+                                                    <button
+                                                        onClick={(e) =>
+                                                            handleStatus(
+                                                                e,
+                                                                row.status,
+                                                                row.instrument_id
+                                                            )
+                                                        }
+                                                        className={`mr-2 text-white p-1.5 ${
+                                                            row.status ===
+                                                            "active"
+                                                                ? "bg-green-500 hover:bg-green-600"
+                                                                : "bg-red-500 hover:bg-red-600"
+                                                        }`}
+                                                    >
+                                                        {row.status === "active"
+                                                            ? "Active"
+                                                            : "Inactive"}
+                                                    </button>
                                                     <Link
                                                         to={`/csd/view-instrument/${row.instrument_id}`}
                                                         className="bg-red-500 text-white hover:bg-red-600 p-1.5 mr-2"

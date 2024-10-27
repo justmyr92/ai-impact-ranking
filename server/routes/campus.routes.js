@@ -26,4 +26,17 @@ router.get("/get/campuses/:extension", async (req, res) => {
     }
 });
 
+router.get("/get/campus-by-user-id/:user_id", async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const campus_id = await pool.query(
+            "SELECT campus_id FROM sd_office WHERE user_id = $1",
+            [user_id]
+        );
+        res.json(campus_id.rows);
+    } catch (error) {
+        console.error(err.message);
+    }
+});
+
 module.exports = router;

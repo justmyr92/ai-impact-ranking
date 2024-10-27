@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BarChart, Card } from "@tremor/react";
 import excelFormula from "excel-formula";
 import Groq from "groq-sdk";
+import parse from "html-react-parser";
 
 const groq = new Groq({
     apiKey: "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",
@@ -162,8 +163,7 @@ const Recommender = ({ selectedYear }) => {
                     record.total_score
                 }. Here are the relevant sections: ${record.section_content.join(
                     ", "
-                )}. Provide detailed short analysis and 3 recommendations for improvement in paragraph.`;
-
+                )}. Provide detailed short analysis and 3 recommendations for improvement in paragraph and return in html as ordered list and add break line in every close of li tag.`;
                 try {
                     const chatCompletion = await groq.chat.completions.create({
                         messages: [{ role: "user", content: prompt }],
@@ -175,9 +175,18 @@ const Recommender = ({ selectedYear }) => {
                     // Accessing the response directly
                     const responseContent =
                         chatCompletion.choices[0]?.message?.content || "";
+
+                    // Remove all asterisks from responseContent
+                    const cleanResponseContent = responseContent.replace(
+                        /\*/g,
+                        ""
+                    );
+
+                    console.log(cleanResponseContent);
+
                     recommendationsArray.push({
                         sdg_no: record.sdg_no,
-                        recommendations: responseContent,
+                        recommendations: cleanResponseContent,
                     });
                 } catch (error) {
                     console.error(
@@ -293,9 +302,14 @@ const Recommender = ({ selectedYear }) => {
     useEffect(() => {
         const fetchCampuses = async () => {
             try {
-                const response = await fetch(
-                    "http://localhost:9000/api/get/campuses"
-                );
+                let url;
+                localStorage.getItem("role").toString() === "1"
+                    ? (url = `http://localhost:9000/api/get/campus-by-user-id/${localStorage.getItem(
+                          "user_id"
+                      )}`)
+                    : (url = "http://localhost:9000/api/get/campuses");
+
+                const response = await fetch(url);
                 const data = await response.json();
                 setCampuses(data);
                 setSelectedCampus(data[0].campus_id); // Set the first campus by default
@@ -317,23 +331,28 @@ const Recommender = ({ selectedYear }) => {
     return (
         <Card className="w-[100%]">
             <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                Score per Campus
+                Prescriptive Analysis
             </h3>
             <div className="mt-4 gap-2">
-                <select
-                    value={selectedCampus || ""}
-                    onChange={handleSelectCampus}
-                    className="p-2 border border-gray-300 rounded"
-                >
-                    {campuses.map((campus) => (
-                        <option key={campus.campus_id} value={campus.campus_id}>
-                            {campus.name
-                                .replace("BatStateU - ", "")
-                                .replace("Campus", "")
-                                .replace("Pablo Borbon", "Main")}
-                        </option>
-                    ))}
-                </select>
+                {localStorage.getItem("role").toString() === "0" && (
+                    <select
+                        value={selectedCampus || ""}
+                        onChange={handleSelectCampus}
+                        className="p-2 border border-gray-300 rounded"
+                    >
+                        {campuses.map((campus) => (
+                            <option
+                                key={campus.campus_id}
+                                value={campus.campus_id}
+                            >
+                                {campus.name
+                                    .replace("BatStateU - ", "")
+                                    .replace("Campus", "")
+                                    .replace("Pablo Borbon", "Main")}
+                            </option>
+                        ))}
+                    </select>
+                )}
                 <select
                     value={selectedSdG || ""}
                     onChange={handleSelectSDG}
@@ -352,46 +371,16 @@ const Recommender = ({ selectedYear }) => {
                 recommendations.map((rec, index) => (
                     <div key={index}>
                         <h3>SDG {rec.sdg_no} Recommendations:</h3>
-                        <p>{rec.recommendations}</p>
+                        {parse(rec.recommendations)}
                     </div>
                 ))
             ) : (
-                <pre className="text-justify">
+                <div className="text-justify">
                     No recommendations available.
-                </pre>
+                </div>
             )}
         </Card>
     );
-
-    // return (
-    // <Card className="w-[100%]">
-    //     <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-    //         Score per Campus
-    //     </h3>
-    //     <div className="mt-4">
-    //         <select
-    //             value={selectedCampus || ""}
-    //             onChange={handleSelectCampus}
-    //             className="p-2 border border-gray-300 rounded"
-    //         >
-    //             {campuses.map((campus) => (
-    //                 <option key={campus.campus_id} value={campus.campus_id}>
-    //                     {campus.name
-    //                         .replace("BatStateU - ", "")
-    //                         .replace("Campus", "")
-    //                         .replace("Pablo Borbon", "Main")}
-    //                 </option>
-    //             ))}
-    //         </select>
-    //     </div>
-
-    //     {loading && <div>Loading...</div>}
-
-    //     <h2>Recommendations</h2>
-    //     <p>{recommendations}</p>
-    // </Card>
-
-    // );
 };
 
 export default Recommender;

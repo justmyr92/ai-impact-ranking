@@ -48,6 +48,22 @@ router.post("/records-values", async (req, res) => {
     }
 });
 
+router.get("/get/records-count-per-sdg", async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT s.sdg_id, s.title, COALESCE(COUNT(r.sdg_id), 0) AS count
+             FROM sdg s
+             LEFT JOIN records r ON s.sdg_id = r.sdg_id
+             GROUP BY s.sdg_id, s.title
+             ORDER BY s.number`
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+});
+
 router.post("/records-values/check", async (req, res) => {
     try {
         const { selectedYear, selectedSdg, user_id } = req.body;

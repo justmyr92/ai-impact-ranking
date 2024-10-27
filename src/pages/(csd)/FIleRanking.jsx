@@ -26,26 +26,6 @@ const sdgColors = {
     "SDG 17": "#8E44AD",
 };
 
-const sdgData = [
-    { sdg: "SDG 1", file_no: 2 },
-    { sdg: "SDG 2", file_no: 0 },
-    { sdg: "SDG 3", file_no: 0 },
-    { sdg: "SDG 4", file_no: 0 },
-    { sdg: "SDG 5", file_no: 0 },
-    { sdg: "SDG 6", file_no: 0 },
-    { sdg: "SDG 7", file_no: 0 },
-    { sdg: "SDG 8", file_no: 0 },
-    { sdg: "SDG 9", file_no: 0 },
-    { sdg: "SDG 10", file_no: 0 },
-    { sdg: "SDG 11", file_no: 0 },
-    { sdg: "SDG 12", file_no: 0 },
-    { sdg: "SDG 13", file_no: 0 },
-    { sdg: "SDG 14", file_no: 0 },
-    { sdg: "SDG 15", file_no: 0 },
-    { sdg: "SDG 16", file_no: 0 },
-    { sdg: "SDG 17", file_no: 0 },
-];
-
 const data = [
     { name: "Approved", amount: 1 },
     { name: "Not Approved", amount: 1 },
@@ -53,16 +33,14 @@ const data = [
 ];
 
 // BarChart component with color mapping
-export const BarChartHero = () => (
+export const BarChartHero = (sdgData) => (
     <Card className="w-[60%]">
-        <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            Record Frequency
-        </h3>
+        <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong"></h3>
         <BarChart
             className="h-80"
             data={sdgData}
-            index="sdg"
-            categories={["file_no"]}
+            index="sdg_id"
+            categories={["count"]}
             // colors={sdgData.map((item) => sdgColors[item.sdg] || "#808080")}
         />
     </Card>
@@ -163,6 +141,27 @@ const FileRanking = () => {
             color: "#19486A",
         },
     ]);
+
+    const [sdgData, setSdgData] = useState([]);
+
+    useEffect(() => {
+        const getSdgData = async () => {
+            try {
+                const sdgResponse = await fetch(
+                    "http://localhost:9000/api/get/records-count-per-sdg"
+                );
+
+                const sdgList = await sdgResponse.json();
+                console.log(sdgList);
+
+                setSdgData(sdgList);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+        getSdgData();
+    }, []);
+
     return (
         <section className="h-screen flex">
             <Sidebar />
@@ -173,7 +172,7 @@ const FileRanking = () => {
                 <hr />
                 <div className="py-5 px-7">
                     <div className="flex gap-2">
-                        <BarChartHero />
+                        <BarChartHero sdgData={sdgData} />
                         {/* <DonutChartHero
                             averageScore={avarage}
                             limitedCampuses={campuses}
