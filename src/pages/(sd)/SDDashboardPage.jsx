@@ -83,7 +83,7 @@ const SDDashboardPage = () => {
                         setTopCampus={setTopCampus}
                         selectedYear={selectedYear}
                     />
-                    <BatStateUSDGScoreChart />
+                    {/* <BatStateUSDGScoreChart /> */}
                 </div>
                 <div className="flex gap-4 mb-2">
                     <CampusScoreperSDGChart selectedYear={selectedYear} />

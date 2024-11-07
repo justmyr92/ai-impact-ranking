@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -11,6 +11,18 @@ const ViewInstrumentPage = () => {
     const [questions, setQuestions] = useState([]);
     const [formula, setFormula] = useState("");
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
     useEffect(() => {
         const fetchInstrument = async () => {
             const response = await fetch(

@@ -6,9 +6,9 @@ import BatStateUSDGScoreChart from "../../components/BatStateUSDGScoreChart";
 import CampusScoreperSDGChart from "../../components/CampusScoreperSDGChart";
 import CampusSDGScoreChart from "../../components/CampusSDGScorePage";
 import Recommender from "../../components/Recommender";
-import FileChart from "../../components/FileChart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRankingStar } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const groq = new Groq({
     apiKey: "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",
@@ -21,6 +21,21 @@ const DashboardPage = () => {
     const [campusScores, setCampusScores] = useState([]);
     const [selectedYear, setSelectedYear] = useState("2024");
     const years = ["2024", "2023", "2022", "2021"];
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (!userId || !role) {
+            navigate("/login");
+        }
+
+        if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const getSDOfficers = async () => {
@@ -78,7 +93,7 @@ const DashboardPage = () => {
                         setTopCampus={setTopCampus}
                         selectedYear={selectedYear}
                     />
-                    <BatStateUSDGScoreChart />
+                    {/* <BatStateUSDGScoreChart /> */}
                 </div>
                 <div className="flex gap-4 mb-2">
                     <CampusScoreperSDGChart selectedYear={selectedYear} />

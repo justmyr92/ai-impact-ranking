@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const AddInstrumentPage = () => {
-    const navigate = useNavigate(); // Initialize navigate hook
     const [sdgs, setSdgs] = useState([
         { sdg_id: "SDG01", no: 1, title: "No Poverty" },
         { sdg_id: "SDG02", no: 2, title: "Zero Hunger" },
@@ -43,25 +42,18 @@ const AddInstrumentPage = () => {
         { sdg_id: "SDG17", no: 17, title: "Partnerships for the Goals" },
     ]);
 
-    // useEffect(() => {
-    //     const runValidation = async () => {
-    //         try {
-    //             const isVerified = await validateToken();
-    //             if (
-    //                 !isVerified ||
-    //                 localStorage.getItem("role").toString() !== "0"
-    //             ) {
-    //                 window.location.href = "/login";
-    //             }
-    //         } catch (error) {
-    //             console.error("Error during token validation:", error);
-    //             return {
-    //                 error: "An error occurred during token validation.",
-    //             };
-    //         }
-    //     };
-    //     runValidation();
-    // }, []);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
 
     const [instrumentData, setInstrumentData] = useState({
         sdg_id: "",

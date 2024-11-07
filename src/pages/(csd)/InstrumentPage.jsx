@@ -7,7 +7,7 @@ import {
     faEye,
 } from "@fortawesome/free-regular-svg-icons";
 import { getInstruments } from "../../services/service"; // Import your service for fetching instruments
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const InstrumentsPage = () => {
     const [instruments, setInstruments] = useState([]);
@@ -96,6 +96,19 @@ const InstrumentsPage = () => {
     ]);
     const [editSelected, setEditSelected] = useState("");
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
+
     useEffect(() => {
         const runValidation = async () => {
             try {
@@ -157,11 +170,9 @@ const InstrumentsPage = () => {
                     body: JSON.stringify({ status: new_status }),
                 }
             );
-
             if (!response.ok) {
                 throw new Error("Network response was not ok");
             }
-
             const data = await response.json();
             console.log("Status updated:", data);
         } catch (error) {

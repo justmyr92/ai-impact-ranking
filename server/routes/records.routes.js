@@ -538,52 +538,159 @@ router.get("/get/records-values/:sdg_id", async (req, res) => {
     }
 });
 
-router.post("/upload-evidence", upload.array("files"), async (req, res) => {
-    // Access the sectionData from req.body
-    const sectionData = JSON.parse(req.body.sectionData); // Parse the JSON string
-    console.log("Received sectionData from client:", req.body);
+// router.post("/upload-evidence", upload.array("files"), async (req, res) => {
+//     // Access the sectionData from req.body
+//     const sectionData = JSON.parse(req.body.sectionData); // Parse the JSON string
+//     console.log("Received sectionData from client:", req.body);
+//     try {
+//         const promises = [];
+
+//         console.log(sectionData, "sas");
+//         for (const sectionId in sectionData) {
+//             const files = req.files.filter((file) =>
+//                 sectionData[sectionId].some(
+//                     (evidence) => evidence.fileName === file.originalname
+//                 )
+//             );
+
+//             files.forEach((file) => {
+//                 const evidence = {
+//                     evidence_id:
+//                         "EID" + Math.floor(Math.random() * 900000 + 100000),
+//                     name: file.filename, // Use the stored filename
+//                     type: file.mimetype,
+//                     section_id: sectionId,
+//                     record_id: sectionData.record_id, // Set record_id as needed
+//                 };
+
+//                 console.log(evidence, "asdasd");
+
+//                 // Prepare the insert query
+//                 const query = `
+//                     INSERT INTO evidence (evidence_id, name, type, section_id, record_id)
+//                     VALUES ($1, $2, $3, $4, $5)
+//                 `;
+//                 promises.push(
+//                     pool.query(query, [
+//                         evidence.evidence_id,
+//                         evidence.name,
+//                         evidence.type,
+//                         evidence.section_id,
+//                         evidence.record_id,
+//                     ])
+//                 );
+//             });
+//         }
+
+//         await Promise.all(promises); // Wait for all insertions to complete
+//         res.status(200).json({
+//             message: "Files uploaded and data saved successfully!",
+//         });
+//     } catch (error) {
+//         console.error("Error uploading files: ", error);
+//         res.status(500).json({
+//             message: "Failed to upload files and save data.",
+//         });
+//     }
+// });
+
+router.post("/upload-evidence", upload.single("files"), async (req, res) => {
     try {
-        const promises = [];
-        for (const sectionId in sectionData) {
-            const files = req.files.filter((file) =>
-                sectionData[sectionId].some(
-                    (evidence) => evidence.fileName === file.originalname
-                )
-            );
+        // Parse sectionData from the request body
+        const sectionData = JSON.parse(req.body.sectionData);
+        console.log("Received sectionData from client:", sectionData);
 
-            files.forEach((file) => {
-                const evidence = {
-                    name: file.filename, // Use the stored filename
-                    type: file.mimetype,
-                    section_id: sectionId,
-                    record_id: "REC3068058", // Set record_id as needed
-                };
+        // Extract the necessary data for the evidence record
+        const evidence = {
+            evidence_id: "EID" + Math.floor(Math.random() * 900000 + 100000),
+            name: req.file.filename, // Use the stored filename
+            type: req.file.mimetype,
+            section_id: sectionData.section_id, // Use the section ID from sectionData
+            record_id: sectionData.record_id, // Use the record ID from sectionData
+        };
 
-                // Prepare the insert query
-                const query = `
-                    INSERT INTO evidence (name, type, section_id, record_id)
-                    VALUES ($1, $2, $3, $4)
-                `;
-                promises.push(
-                    pool.query(query, [
-                        evidence.name,
-                        evidence.type,
-                        evidence.section_id,
-                        evidence.record_id,
-                    ])
-                );
-            });
-        }
+        console.log("Inserting evidence:", evidence);
 
-        await Promise.all(promises); // Wait for all insertions to complete
+        // Prepare the insert query
+        const query = `
+            INSERT INTO evidence (evidence_id, name, type, section_id, record_id)
+            VALUES ($1, $2, $3, $4, $5)
+        `;
+
+        // Execute the query to insert the evidence record
+        await pool.query(query, [
+            evidence.evidence_id,
+            evidence.name,
+            evidence.type,
+            evidence.section_id,
+            evidence.record_id,
+        ]);
+
         res.status(200).json({
-            message: "Files uploaded and data saved successfully!",
+            message: "File uploaded and data saved successfully!",
         });
     } catch (error) {
-        console.error("Error uploading files: ", error);
+        console.error("Error uploading file:", error);
         res.status(500).json({
-            message: "Failed to upload files and save data.",
+            message: "Failed to upload file and save data.",
         });
+    }
+});
+
+router.get("/get/records-count-by-status", async (req, res) => {
+    try {
+        const result = await pool.query(`WITH Statuses AS (
+    SELECT 1 AS status, 'Approved' AS name
+    UNION ALL
+    SELECT 2 AS status, 'Not Approved' AS name
+    UNION ALL
+    SELECT 3 AS status, 'For Revision' AS name
+)
+SELECT 
+    Statuses.name,
+    COALESCE(COUNT(records.status), 0) AS amount
+FROM Statuses
+LEFT JOIN records ON Statuses.status = records.status
+GROUP BY Statuses.status, Statuses.name
+ORDER BY Statuses.status;
+
+`);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error getting records count by status: ", error);
+    }
+});
+
+router.get("/get/records-pero-question/:sdg_id", async (req, res) => {
+    try {
+        const sdg_id = req.params.sdg_id;
+        const result = await pool.query(
+            `
+SELECT 
+    q.section_id,
+    q.question,
+    COALESCE(SUM(CAST(rv.value AS numeric)), 0) AS total_value
+FROM 
+    question q
+LEFT JOIN 
+    records_values rv ON rv.question_id = q.question_id
+LEFT JOIN 
+    records r ON r.record_id = rv.record_id
+WHERE 
+    r.sdg_id = $1
+GROUP BY 
+    q.section_id, q.question
+ORDER BY 
+    q.section_id;
+
+`,
+            [sdg_id]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error getting records count by status: ", error);
     }
 });
 

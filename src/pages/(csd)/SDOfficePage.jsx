@@ -5,6 +5,7 @@ import { faSquarePlus, faEdit } from "@fortawesome/free-regular-svg-icons";
 import { getAllSdOffices, validateToken } from "../../services/service";
 import AddSDOfficeModal from "../../components/AddSDOfficeModal";
 import UpdateUserModal from "../../components/UpdateUserModal"; // Import the UpdateUserModal
+import { useNavigate } from "react-router-dom";
 
 const SDOfficePage = () => {
     const [sdOffice, setSdOffices] = useState([]);
@@ -13,6 +14,19 @@ const SDOfficePage = () => {
     const [userId, setUserId] = useState(null); // State to track the user to update
     const [reload, setReload] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
 
     useEffect(() => {
         const runValidation = async () => {

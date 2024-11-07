@@ -264,7 +264,7 @@ const CampusScoreperSDGChart = ({ selectedYear }) => {
     }, [scores]);
 
     return (
-        <Card className="w-[70%]">
+        <Card className="w-[100%]">
             <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
                 Score per Campus
             </h3>

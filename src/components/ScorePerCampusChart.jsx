@@ -231,13 +231,10 @@ const ScorePerCampusChart = ({ setScores, setTopCampus, selectedYear }) => {
     }, [formulas, records, campuses]);
 
     return (
-        <Card className="w-[75%]">
+        <Card className="w-[100%]">
             <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
                 Score per Campus
             </h3>
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-                Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
-            </p>
             <div className="grid grid-cols-10 gap-2 mt-4">
                 {sdgs.map((sdg) => (
                     <div

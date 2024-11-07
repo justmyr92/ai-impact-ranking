@@ -75,14 +75,14 @@ const questions = [
     },
 ];
 
-const QuestionGrid = () => {
+const QuestionGrid = ({ records }) => {
     // Helper function to get a random number between 1 and 10
-    const getRandomNumber = () => Math.floor(Math.random() * 10) + 1;
+    // const getRandomNumber = () => Math.floor(Math.random() * 10) + 1;
 
     return (
         <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                {questions.map((question) => (
+                {records.map((question) => (
                     <div
                         key={question.question_id}
                         className="bg-white shadow-md rounded-lg p-4"
@@ -92,7 +92,7 @@ const QuestionGrid = () => {
                         </p>
                         <hr className="my-3" />
                         <div className="mt-4 text-5xl font-bold text-indigo-600">
-                            {getRandomNumber()}
+                            {question.total_value}
                         </div>
                     </div>
                 ))}

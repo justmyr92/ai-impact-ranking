@@ -5,6 +5,7 @@ import UpdateRecordStatus from "../../components/UpdateRecordStatus";
 import ViewRecords from "../../components/ViewRecords";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const CSDRecordPage = () => {
     const [selectedYear, setSelectedYear] = useState("2023");
@@ -92,6 +93,19 @@ const CSDRecordPage = () => {
         },
     ]);
     const [sdOffices, setSdOffices] = useState([]); // State for SD Offices
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
 
     useEffect(() => {
         // Function to fetch the SD Offices from the backend

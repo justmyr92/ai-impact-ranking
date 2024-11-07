@@ -8,38 +8,31 @@ import {
     faClipboard,
     faList,
     faRankingStar,
+    faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
 const Sidebar = () => {
     const location = useLocation();
     const [role, setRole] = useState(null);
 
+    const prefix = role === "1" ? "sd" : "csd";
     // Set the role from localStorage
     useEffect(() => {
         const storedRole = localStorage.getItem("role");
+        console.log(location.pathname, "s");
         setRole(storedRole);
     }, []);
 
-    const prefix = role === "1" ? "sd" : "csd";
-
-    // Define the links, conditionally hiding the "SD Office" link when role is "1"
     const links = [
         {
-            title: "Dashboard",
-            icon: faChartSimple,
-            isMultilevel: true,
-            children: [
-                {
-                    title: "Impact Ranking",
-                    icon: faRankingStar,
-                    url: `/${prefix}/impact-ranking`,
-                },
-                {
-                    title: "Record Tracks",
-                    icon: faClipboard,
-                    url: `/${prefix}/record-tracks`,
-                },
-            ],
+            title: "Impact Ranking",
+            icon: faRankingStar,
+            url: `/${prefix}/impact-ranking`,
+        },
+        {
+            title: "Record Tracks",
+            icon: faClipboard,
+            url: `/${prefix}/record-tracks`,
         },
         role !== "1" && {
             title: "SD Office", // This link will be hidden when role is "1"
@@ -76,53 +69,64 @@ const Sidebar = () => {
                 <nav>
                     <ul className="space-y-2">
                         {links.map((link, index) => (
-                            <li key={index}>
-                                <div
-                                    className={`flex items-center p-2 rounded-lg text-white ${
-                                        link.isMultilevel
-                                            ? "cursor-pointer"
-                                            : ""
-                                    }`}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={link.icon}
-                                        className="text-white mr-3"
-                                    />
-                                    {link.isMultilevel ? (
-                                        <span className="font-medium">
-                                            {link.title}
-                                        </span>
-                                    ) : (
+                            <>
+                                <li key={index}>
+                                    <div
+                                        className={`flex items-center p-2 rounded-lg ${
+                                            location.pathname === link.url
+                                                ? "bg-white text-[#e5243b]"
+                                                : "bg-[#e5243b] text-white"
+                                        }`}
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={link.icon}
+                                            className={`mr-3 ${
+                                                location.pathname === link.url
+                                                    ? "bg-white text-[#e5243b]"
+                                                    : "bg-[#e5243b] text-white"
+                                            }`}
+                                        />
+
                                         <Link
                                             to={link.url}
                                             className=" font-medium"
                                         >
                                             {link.title}
                                         </Link>
-                                    )}
-                                </div>
-                                {link.isMultilevel && (
-                                    <ul className="ml-4 mt-2 space-y-1">
-                                        {link.children.map(
-                                            (child, childIndex) => (
-                                                <li key={childIndex}>
-                                                    <Link
-                                                        to={child.url}
-                                                        className="flex items-center p-2 text-white hover:bg-[#e9244a] rounded-lg"
-                                                    >
-                                                        <FontAwesomeIcon
-                                                            icon={child.icon}
-                                                            className="mr-2"
-                                                        />
-                                                        {child.title}
-                                                    </Link>
-                                                </li>
-                                            )
-                                        )}
-                                    </ul>
-                                )}
-                            </li>
+                                    </div>
+                                    {/* {link.isMultilevel && (
+                                        <ul className="ml-4 mt-2 space-y-1">
+                                            {link.children.map(
+                                                (child, childIndex) => (
+                                                    <li key={childIndex}>
+                                                        <Link
+                                                            to={child.url}
+                                                            className="flex items-center p-2 text-white hover:bg-[#e9244a] rounded-lg"
+                                                        >
+                                                            <FontAwesomeIcon
+                                                                icon={
+                                                                    child.icon
+                                                                }
+                                                                className="mr-2"
+                                                            />
+                                                            {child.title}
+                                                        </Link>
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    )} */}
+                                </li>
+                            </>
                         ))}
+
+                        <li className="flex items-center p-2 text-white hover:bg-[#e9244a] rounded-lg">
+                            <FontAwesomeIcon
+                                icon={faRightFromBracket}
+                                className="mr-2"
+                            />
+                            Logout
+                        </li>
                     </ul>
                 </nav>
             </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import loginBG from "../assets/login-cover.png";
 import { loginSubmit } from "../services/service";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
     const [loginCredentials, setLoginCredentials] = useState({
@@ -9,7 +10,20 @@ const LoginPage = () => {
         password: "",
     });
 
-    const [isEmpty, setIsEmpty] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
+
+    const [isEmpty, setIsEmpty] = useState(false);
     const [isError, setIsError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 

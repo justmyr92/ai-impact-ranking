@@ -1,67 +1,15 @@
 import React from "react";
 import Sidebar from "../../components/Sidebar";
-import { BarChart, Card, DonutChart } from "@tremor/react";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import QuestionGrid from "../../components/QuestionGrid";
-
-// SDG color mapping
-const sdgColors = {
-    "SDG 1": "#FF5733",
-    "SDG 2": "#33FF57",
-    "SDG 3": "#3357FF",
-    "SDG 4": "#FF33A8",
-    "SDG 5": "#FFC300",
-    "SDG 6": "#DAF7A6",
-    "SDG 7": "#900C3F",
-    "SDG 8": "#FF5733",
-    "SDG 9": "#C70039",
-    "SDG 10": "#581845",
-    "SDG 11": "#2ECC71",
-    "SDG 12": "#3498DB",
-    "SDG 13": "#9B59B6",
-    "SDG 14": "#E74C3C",
-    "SDG 15": "#F39C12",
-    "SDG 16": "#1ABC9C",
-    "SDG 17": "#8E44AD",
-};
-
-const data = [
-    { name: "Approved", amount: 1 },
-    { name: "Not Approved", amount: 1 },
-    { name: "For Revision", amount: 0 },
-];
-
-// BarChart component with color mapping
-export const BarChartHero = (sdgData) => (
-    <Card className="w-[60%]">
-        <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong"></h3>
-        <BarChart
-            className="h-80"
-            data={sdgData}
-            index="sdg_id"
-            categories={["count"]}
-            // colors={sdgData.map((item) => sdgColors[item.sdg] || "#808080")}
-        />
-    </Card>
-);
-
-export const BarChartHero2 = () => (
-    <Card className="w-[40%]">
-        <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            Record Frequency
-        </h3>
-        <BarChart
-            className="h-80"
-            data={data}
-            index="name"
-            categories={["amount"]}
-            // colors={sdgData.map((item) => sdgColors[item.sdg] || "#808080")}
-        />
-    </Card>
-);
+import BarChartHero from "../../components/BarChartHero";
+import { useNavigate } from "react-router-dom";
 
 const FileRanking = () => {
+    const [sdgData, setSdgData] = useState([]);
+    const [fileCount, setFileCount] = useState([]);
+    const [selectedSDG, setSelectedSDG] = useState(""); // Track selected SDG
+    const [records, setRecords] = useState([]);
     const [sdgs, setSdgs] = useState([
         { sdg_id: "SDG01", no: 1, title: "No Poverty", color: "#E5243B" },
         { sdg_id: "SDG02", no: 2, title: "Zero Hunger", color: "#DDA63A" },
@@ -142,25 +90,70 @@ const FileRanking = () => {
         },
     ]);
 
-    const [sdgData, setSdgData] = useState([]);
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const userId = localStorage.getItem("user_id");
+        const role = localStorage.getItem("role");
+
+        if (userId && role === "0") {
+            navigate("/csd/impact-ranking");
+        } else if (userId && role === "1") {
+            navigate("/sd/impact-ranking");
+        }
+    }, [navigate]);
     useEffect(() => {
         const getSdgData = async () => {
             try {
                 const sdgResponse = await fetch(
                     "http://localhost:9000/api/get/records-count-per-sdg"
                 );
-
                 const sdgList = await sdgResponse.json();
                 console.log(sdgList);
-
                 setSdgData(sdgList);
             } catch (error) {
                 console.error(error);
             }
         };
+
+        const getFileCount = async () => {
+            try {
+                const fileCountResponse = await fetch(
+                    "http://localhost:9000/api/get/records-count-by-status"
+                );
+                const fileCountData = await fileCountResponse.json();
+                setFileCount(fileCountData);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
         getSdgData();
+        getFileCount();
     }, []);
+
+    useEffect(() => {
+        const getQuestionsValues = async () => {
+            if (selectedSDG) {
+                try {
+                    const setRecordsResponse = await fetch(
+                        `http://localhost:9000/api/get/records-pero-question/${selectedSDG}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+                    const setRecordsData = await setRecordsResponse.json();
+                    setRecords(setRecordsData);
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        };
+        getQuestionsValues();
+    }, [selectedSDG]);
 
     return (
         <section className="h-screen flex">
@@ -172,12 +165,16 @@ const FileRanking = () => {
                 <hr />
                 <div className="py-5 px-7">
                     <div className="flex gap-2">
-                        <BarChartHero sdgData={sdgData} />
-                        {/* <DonutChartHero
-                            averageScore={avarage}
-                            limitedCampuses={campuses}
-                        /> */}
-                        <BarChartHero2 />
+                        <BarChartHero
+                            data={sdgData}
+                            indexTitle={"sdg_id"}
+                            categoryTitle={"count"}
+                        />
+                        <BarChartHero
+                            data={fileCount}
+                            indexTitle={"name"}
+                            categoryTitle={"amount"}
+                        />
                     </div>
 
                     <hr className="my-4" />
@@ -192,7 +189,12 @@ const FileRanking = () => {
                             <select
                                 id="sdg-select"
                                 className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                onChange={(e) => setSelectedSDG(e.target.value)} // Update selected SDG on change
                             >
+                                <option value="" disabled selected>
+                                    Select an SDG
+                                </option>{" "}
+                                {/* Optional placeholder */}
                                 {sdgs.map((sdg) => (
                                     <option
                                         key={sdg.sdg_id}
@@ -205,7 +207,7 @@ const FileRanking = () => {
                             </select>
                         </div>
                     </div>
-                    <QuestionGrid />
+                    <QuestionGrid records={records} />
                 </div>
             </main>
         </section>

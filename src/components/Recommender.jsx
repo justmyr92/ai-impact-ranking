@@ -141,7 +141,6 @@ const Recommender = ({ selectedYear }) => {
             color: "#19486A",
         },
     ]);
-    const [loading, setLoading] = useState(true);
     const [selectedSdG, setSelectedSdg] = useState("SDG01");
     const fetchRecommendations = async (score, sdg_id) => {
         if (score) {
@@ -155,6 +154,16 @@ const Recommender = ({ selectedYear }) => {
 
             // Loop through each SDG and fetch recommendations
             for (const record of sdgsWithLowScores) {
+                // const prompt = `For campus: ${
+                //     score.campus_name
+                // }, analyze the following SDG: ${
+                //     record.sdg_no
+                // }. The total score is ${
+                //     record.total_score
+                // }. Here are the relevant sections: ${record.section_content.join(
+                //     ", "
+                // )}. Provide detailed short analysis and 3 recommendations for improvement in paragraph and return in html as ordered list and add break line in every close of li tag.`;
+                //
                 const prompt = `For campus: ${
                     score.campus_name
                 }, analyze the following SDG: ${
@@ -163,7 +172,17 @@ const Recommender = ({ selectedYear }) => {
                     record.total_score
                 }. Here are the relevant sections: ${record.section_content.join(
                     ", "
-                )}. Provide detailed short analysis and 3 recommendations for improvement in paragraph and return in html as ordered list and add break line in every close of li tag.`;
+                )}.
+Return your response in the following format:
+1. Analysis:
+   1) Explanation of the SDG focus and current challenges.
+2. Insights:
+   1) Summary of key insights from the data.
+3. Recommendations:
+   1) Provide three actionable recommendations for improvement.
+
+Return the answer in HTML as an ordered list. Add a line break after each </li> for readability.`;
+
                 try {
                     const chatCompletion = await groq.chat.completions.create({
                         messages: [{ role: "user", content: prompt }],
@@ -366,13 +385,9 @@ const Recommender = ({ selectedYear }) => {
                 </select>
             </div>
 
-            <h2>Recommendations</h2>
             {recommendations && recommendations.length > 0 ? (
                 recommendations.map((rec, index) => (
-                    <div key={index}>
-                        <h3>SDG {rec.sdg_no} Recommendations:</h3>
-                        {parse(rec.recommendations)}
-                    </div>
+                    <div key={index}>{parse(rec.recommendations)}</div>
                 ))
             ) : (
                 <div className="text-justify">

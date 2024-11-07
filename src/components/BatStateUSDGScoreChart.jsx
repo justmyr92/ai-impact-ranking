@@ -112,9 +112,6 @@ const BatStateUSDGScoreChart = () => {
             <h3 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
                 BatStateU SDG Score
             </h3>
-            <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-                Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
-            </p>
 
             <DonutChart
                 data={[
